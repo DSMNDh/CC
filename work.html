@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work | Command Center</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+a{text-decoration:none}
+.topnav{background:#111;border-bottom:1px solid #222;position:sticky;top:0;z-index:100}
+.nav-inner{display:flex;align-items:center;padding:0 20px;height:54px;gap:6px}
+.nav-brand{font-weight:700;font-size:1.05rem;color:#00d4aa;margin-right:auto;white-space:nowrap}
+.nav-links{display:flex;gap:2px}
+.nav-link{color:#aaa;padding:6px 12px;border-radius:6px;font-size:.85rem;transition:all .2s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:#1a1a1a;color:#00d4aa}
+.nav-ham{display:none;background:none;border:none;color:#aaa;font-size:1.4rem;cursor:pointer;margin-left:8px}
+.nav-mob{display:none;flex-direction:column;background:#111;border-top:1px solid #222;padding:8px 16px}
+.nav-mob.open{display:flex}
+.nav-mob a{color:#aaa;padding:10px 8px;border-bottom:1px solid #1a1a1a;font-size:.9rem}
+.nav-mob a:last-child{border-bottom:none}
+@media(max-width:720px){.nav-links{display:none}.nav-ham{display:block}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px}
+.section{margin-bottom:28px}
+.section-title{font-size:.78rem;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:"";flex:1;height:1px;background:#1e1e1e}
+.card{background:#141414;border:1px solid #222;border-radius:12px;padding:20px}
+
+/* QUOTE */
+.quote-banner{background:linear-gradient(135deg,#071a15,#0d1b2a);border:1px solid #00d4aa22;border-radius:14px;padding:24px 28px;margin-bottom:28px;position:relative;overflow:hidden}
+.quote-banner::before{content:"\201C";position:absolute;top:-10px;left:12px;font-size:8rem;color:#00d4aa10;font-family:Georgia,serif;line-height:1}
+.quote-text{font-size:1.1rem;font-style:italic;color:#ddd;line-height:1.7;margin-bottom:10px;position:relative}
+.quote-author{font-size:.8rem;color:#00d4aa;font-weight:600;position:relative}
+.quote-date{font-size:.75rem;color:#555;margin-top:4px;position:relative}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:580px){.grid-3{grid-template-columns:1fr}}
+
+/* EMAILS */
+.email-item{padding:14px 0;border-bottom:1px solid #1a1a1a;display:flex;gap:12px;align-items:flex-start}
+.email-item:last-child{border-bottom:none}
+.email-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+.email-main{flex:1;min-width:0}
+.email-from{font-size:.88rem;font-weight:600;color:#ddd;margin-bottom:2px;display:flex;align-items:center;gap:6px}
+.email-subject{font-size:.82rem;color:#aaa;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.email-preview{font-size:.78rem;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.email-time{font-size:.72rem;color:#555;flex-shrink:0;margin-top:2px}
+.unread-dot{width:7px;height:7px;background:#00d4aa;border-radius:50%;flex-shrink:0;margin-top:4px}
+
+/* CALENDAR */
+.cal-event{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #1a1a1a;align-items:flex-start}
+.cal-event:last-child{border-bottom:none}
+.cal-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.cal-time{font-size:.75rem;color:#666;min-width:90px;flex-shrink:0;padding-top:1px}
+.cal-title{font-size:.88rem;color:#ddd;margin-bottom:2px}
+.cal-loc{font-size:.75rem;color:#555}
+.cal-badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:600;margin-top:4px}
+
+/* PLANNER */
+.planner-task{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid #1a1a1a;align-items:flex-start}
+.planner-task:last-child{border-bottom:none}
+.task-cb{width:16px;height:16px;accent-color:#00d4aa;flex-shrink:0;margin-top:2px;cursor:pointer}
+.task-info{flex:1}
+.task-name{font-size:.88rem;color:#ddd;margin-bottom:2px}
+.task-meta{font-size:.75rem;color:#555}
+.task-pri{font-size:.7rem;padding:1px 8px;border-radius:10px;font-weight:600}
+.pri-high{background:#2e0505;color:#ef4444}
+.pri-med{background:#2e1a05;color:#f59e0b}
+.pri-low{background:#051b2e;color:#3b82f6}
+.pri-done{background:#1a1a1a;color:#555}
+
+/* FOCUS NOTES */
+.focus-area{display:flex;flex-direction:column;gap:10px}
+.focus-input{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#e5e5e5;padding:10px 14px;font-size:.875rem;outline:none;resize:vertical;min-height:80px;width:100%;font-family:inherit;transition:border .2s}
+.focus-input:focus{border-color:#00d4aa}
+.btn{padding:9px 18px;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s}
+.btn-green{background:#00d4aa;color:#000}
+.btn-green:hover{background:#00bfa5}
+.focus-note{background:#1a1a1a;border-radius:8px;padding:10px 14px;font-size:.84rem;color:#ccc;border-left:3px solid #00d4aa;position:relative}
+.focus-note-del{position:absolute;top:8px;right:8px;background:none;border:none;color:#555;cursor:pointer;font-size:.9rem;padding:0}
+.focus-note-del:hover{color:#ef4444}
+.focus-note-time{font-size:.7rem;color:#555;margin-top:4px}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:#141414;border:1px solid #222;border-radius:10px;padding:14px 16px;text-align:center}
+.stat-val{font-size:1.6rem;font-weight:700;color:#00d4aa;line-height:1}
+.stat-label{font-size:.72rem;color:#666;text-transform:uppercase;letter-spacing:.08em;margin-top:4px}
+@media(max-width:700px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600}
+.tag-new{background:#052e1c;color:#00d4aa}
+.tag-today{background:#2e1a05;color:#f59e0b}
+.tag-soon{background:#051b2e;color:#3b82f6}
+
+/* 11PM NIGHT BRIEF */
+.night-brief{display:none;position:fixed;bottom:20px;right:20px;max-width:340px;width:calc(100vw - 40px);background:linear-gradient(135deg,#1a052e,#0d1420);border:1px solid #7c3aed66;border-radius:16px;padding:18px 20px;z-index:999;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:slideUp .4s ease}
+.night-brief.show{display:block}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.nb-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.nb-close{margin-left:auto;background:none;border:none;color:#555;cursor:pointer;font-size:1.1rem;padding:0;line-height:1}
+.nb-close:hover{color:#aaa}
+.nb-title{font-size:.72rem;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.nb-sub{font-size:.78rem;color:#888;margin-top:1px}
+.nb-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #1e1e1e;font-size:.82rem;align-items:flex-start}
+.nb-item:last-child{border-bottom:none}
+.nb-icon{flex-shrink:0;margin-top:1px}
+.nb-text{color:#ccc;line-height:1.4}
+.nb-label{font-size:.68rem;font-weight:700;margin-bottom:2px}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="nav-inner">
+    <a href="command_center.html" class="nav-brand">&#9889; Command Center</a>
+    <div class="nav-links">
+      <a href="work.html" class="nav-link active">&#128188; Work</a>
+      <a href="invest.html" class="nav-link">&#128200; Invest</a>
+      <a href="marathon.html" class="nav-link">&#127939; Marathon</a>
+      <a href="https://dsmndh.github.io/Daily_Brief/" target="_blank" class="nav-link">&#127836; Mamee</a>
+      <a href="finance.html" class="nav-link">&#128176; Finance</a>
+    </div>
+    <button class="nav-ham" onclick="toggleNav()">&#9776;</button>
+  </div>
+  <div class="nav-mob" id="mobileNav">
+    <a href="command_center.html">&#9889; Hub</a>
+    <a href="work.html">&#128188; Work</a>
+    <a href="invest.html">&#128200; Invest</a>
+    <a href="marathon.html">&#127939; Marathon</a>
+    <a href="https://dsmndh.github.io/Daily_Brief/" target="_blank">&#127836; Mamee</a>
+    <a href="finance.html">&#128176; Finance</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- DAILY QUOTE -->
+<div class="quote-banner">
+  <div class="quote-text" id="quoteText">Loading inspiration...</div>
+  <div class="quote-author" id="quoteAuthor"></div>
+  <div class="quote-date" id="quoteDate"></div>
+</div>
+
+<!-- WORK STATS -->
+<div class="stats-row">
+  <div class="stat-card"><div class="stat-val" id="statEmails">5</div><div class="stat-label">New Emails</div></div>
+  <div class="stat-card"><div class="stat-val" id="statEvents">3</div><div class="stat-label">Upcoming Events</div></div>
+  <div class="stat-card"><div class="stat-val" id="statTasks">4</div><div class="stat-label">Planner Tasks</div></div>
+  <div class="stat-card"><div class="stat-val" id="statNotes">0</div><div class="stat-label">Focus Notes</div></div>
+</div>
+
+<div class="grid-2">
+
+<!-- EMAILS -->
+<div class="section">
+  <div class="section-title">&#128140; Outlook Inbox</div>
+  <div class="card">
+    <div id="emailList"></div>
+    <div style="text-align:center;padding-top:12px">
+      <a href="https://outlook.office.com" target="_blank" style="font-size:.8rem;color:#00d4aa">Open Outlook &#8599;</a>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div class="section">
+  <div class="section-title">&#128197; Calendar</div>
+  <div class="card">
+    <div id="calList"></div>
+    <div style="text-align:center;padding-top:12px">
+      <a href="https://outlook.office.com/calendar" target="_blank" style="font-size:.8rem;color:#00d4aa">Open Calendar &#8599;</a>
+    </div>
+  </div>
+</div>
+
+</div><!-- end grid-2 -->
+
+<!-- PLANNER -->
+<div class="section">
+  <div class="section-title">&#9989; Microsoft Planner</div>
+  <div class="card">
+    <div class="grid-3">
+      <div>
+        <div style="font-size:.75rem;color:#ef4444;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em">&#128308; In Progress</div>
+        <div id="plannerInProgress"></div>
+      </div>
+      <div>
+        <div style="font-size:.75rem;color:#f59e0b;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em">&#128993; Up Next</div>
+        <div id="plannerUpNext"></div>
+      </div>
+      <div>
+        <div style="font-size:.75rem;color:#00d4aa;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em">&#128994; Completed</div>
+        <div id="plannerDone"></div>
+      </div>
+    </div>
+    <div style="text-align:center;padding-top:16px">
+      <a href="https://tasks.office.com" target="_blank" style="font-size:.8rem;color:#00d4aa">Open Planner &#8599;</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOCUS NOTES -->
+<div class="section">
+  <div class="section-title">&#128221; Focus Notes</div>
+  <div class="card">
+    <div class="focus-area">
+      <textarea class="focus-input" id="focusInput" placeholder="Quick note, idea, or task reminder..."></textarea>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-green" onclick="addNote()">Save Note</button>
+        <span id="noteMsg" style="font-size:.8rem;color:#00d4aa;align-self:center"></span>
+      </div>
+      <div id="notesList"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end wrap -->
+
+<script>
+// ---- QUOTES ----
+var QUOTES = [
+  {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
+  {q:"It always seems impossible until it is done.",a:"Nelson Mandela"},
+  {q:"Excellence is not a destination but a continuous journey that never ends.",a:"Brian Tracy"},
+  {q:"Your work is going to fill a large part of your life. The only way to be truly satisfied is to do what you believe is great work.",a:"Steve Jobs"},
+  {q:"The harder you work for something, the greater you will feel when you achieve it.",a:"Unknown"},
+  {q:"Do not watch the clock. Do what it does. Keep going.",a:"Sam Levenson"},
+  {q:"Opportunities do not happen. You create them.",a:"Chris Grosser"},
+  {q:"Success is not the key to happiness. Happiness is the key to success. If you love what you are doing, you will be successful.",a:"Albert Schweitzer"},
+  {q:"The only way to do great work is to love what you do.",a:"Steve Jobs"},
+  {q:"Strive not to be a success, but rather to be of value.",a:"Albert Einstein"},
+  {q:"You do not have to be great to start, but you have to start to be great.",a:"Zig Ziglar"},
+  {q:"Leadership is not about being in charge. It is about taking care of those in your charge.",a:"Simon Sinek"},
+  {q:"In the middle of every difficulty lies opportunity.",a:"Albert Einstein"},
+  {q:"The best time to plant a tree was 20 years ago. The second best time is now.",a:"Chinese Proverb"},
+  {q:"Creative work is not a selfish act or a bid for attention. It is a gift to the world.",a:"Steven Pressfield"}
+];
+
+var today = new Date();
+var dayOfYear = Math.floor((today - new Date(today.getFullYear(),0,0))/(1000*60*60*24));
+var qi = dayOfYear % QUOTES.length;
+document.getElementById("quoteText").textContent = QUOTES[qi].q;
+document.getElementById("quoteAuthor").textContent = "— " + QUOTES[qi].a;
+var dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+document.getElementById("quoteDate").textContent = dayNames[today.getDay()] + ", " + monthNames[today.getMonth()] + " " + today.getDate() + ", " + today.getFullYear();
+
+// ---- EMAILS ----
+var EMAILS = [
+  {from:"Corporate Comm", email:"corporatecomm@mamee.com", subject:"Monthly Town Hall Reminder", preview:"Please be reminded that the monthly town hall is scheduled for this Friday at 3PM...", time:"9:42 AM", unread:true, color:"#7c3aed", initials:"CC"},
+  {from:"Amanda Yau", email:"amanda.yau@mamee.com", subject:"Re: Double Decker Campaign Assets", preview:"Hi Des, I have attached the updated design files. Please review and let me know...", time:"8:15 AM", unread:true, color:"#3b82f6", initials:"AY"},
+  {from:"HC Department", email:"hc@mamee.com", subject:"Leave Application Approved", preview:"Your leave application for May 20-21 has been approved. Please ensure handover...", time:"Yesterday", unread:false, color:"#f59e0b", initials:"HC"},
+  {from:"Hannah Ariffin", email:"hannah.ariffin@mamee.com", subject:"Local Flavs Campaign - Final Brief", preview:"Des, I need the final creative direction by end of week for the Local Flavs campaign...", time:"Yesterday", unread:true, color:"#ef4444", initials:"HA"},
+  {from:"SuccessFactors", email:"successfactors@mamee.com", subject:"Performance Review Due", preview:"Your mid-year performance review is due by May 31. Please log in to complete...", time:"May 3", unread:false, color:"#00d4aa", initials:"SF"},
+  {from:"Marketing Team", email:"marketing@mamee.com", subject:"FIFA Video Brief - Notes", preview:"Summary of today meeting at DeTouche Post. Action items attached. Please review before...", time:"May 5", unread:true, color:"#a855f7", initials:"MT"}
+];
+
+var emailList = document.getElementById("emailList");
+EMAILS.forEach(function(e) {
+  emailList.innerHTML += "<div class='email-item'>" +
+    "<div class='email-avatar' style='background:" + e.color + "20;color:" + e.color + "'>" + e.initials + "</div>" +
+    "<div class='email-main'>" +
+    "<div class='email-from'>" + e.from + " <span style='font-size:.72rem;color:#555;font-weight:400'>" + e.time + "</span>" + (e.unread?"<span class='tag tag-new'>New</span>":"") + "</div>" +
+    "<div class='email-subject' style='" + (e.unread?"color:#e5e5e5;font-weight:600":"") + "'>" + e.subject + "</div>" +
+    "<div class='email-preview'>" + e.preview + "</div>" +
+    "</div></div>";
+});
+
+// ---- CALENDAR ----
+var EVENTS = [
+  {title:"MP FIFA Video - DeTouche Post PJ", time:"Tue, May 5 | 5:00 PM", loc:"DeTouche Post, PJ", color:"#7c3aed", badge:"Today", badgeCls:"tag-today"},
+  {title:"Local Flavs Campaign Presentation", time:"Thu, May 7 | 5:00 PM", loc:"Meeting Room B", color:"#3b82f6", badge:"This Week", badgeCls:"tag-soon"},
+  {title:"Bi-Weekly Marketing Meeting", time:"Wed, May 20 | 10:00 AM", loc:"Conference Room", color:"#00d4aa", badge:"Upcoming", badgeCls:"tag-new"},
+  {title:"Bi-Weekly Marketing Meeting", time:"Tue, Jun 2 | 10:00 AM", loc:"Conference Room", color:"#00d4aa", badge:"Upcoming", badgeCls:"tag-new"},
+  {title:"Monthly Town Hall", time:"Fri, May 8 | 3:00 PM", loc:"Main Hall", color:"#f59e0b", badge:"This Week", badgeCls:"tag-soon"}
+];
+
+var calList = document.getElementById("calList");
+EVENTS.forEach(function(ev) {
+  calList.innerHTML += "<div class='cal-event'>" +
+    "<div class='cal-dot' style='background:" + ev.color + ";margin-top:6px'></div>" +
+    "<div style='flex:1'>" +
+    "<div class='cal-title'>" + ev.title + " <span class='tag " + ev.badgeCls + "'>" + ev.badge + "</span></div>" +
+    "<div class='cal-time'>" + ev.time + "</div>" +
+    "<div class='cal-loc'>&#128205; " + ev.loc + "</div>" +
+    "</div></div>";
+});
+
+// ---- PLANNER ----
+var PLANNER_TASKS = [
+  {name:"Finalise Double Decker TVC storyboard", pri:"high", due:"May 7", status:"inprogress", assignee:"Des"},
+  {name:"Review Local Flavs campaign brief", pri:"high", due:"May 6", status:"inprogress", assignee:"Des"},
+  {name:"Prepare FIFA video shoot notes", pri:"med", due:"May 5", status:"inprogress", assignee:"Des"},
+  {name:"Submit Raya campaign post-mortem", pri:"med", due:"May 10", status:"next", assignee:"Des"},
+  {name:"Update brand guidelines deck", pri:"low", due:"May 15", status:"next", assignee:"Des"},
+  {name:"Brief agency on Q2 social calendar", pri:"med", due:"May 12", status:"next", assignee:"Des"},
+  {name:"Q1 Campaign Report", pri:"low", due:"Apr 30", status:"done", assignee:"Des"},
+  {name:"Approve Raya social assets", pri:"high", due:"Apr 25", status:"done", assignee:"Des"}
+];
+
+function renderPlanner(id, tasks) {
+  var el = document.getElementById(id);
+  tasks.forEach(function(t) {
+    var priCls = t.pri === "high" ? "pri-high" : (t.pri === "med" ? "pri-med" : (t.status === "done" ? "pri-done" : "pri-low"));
+    var priLabel = t.pri === "high" ? "High" : (t.pri === "med" ? "Medium" : "Low");
+    el.innerHTML += "<div class='planner-task'>" +
+      "<input type='checkbox' class='task-cb' " + (t.status==="done"?"checked":"") + ">" +
+      "<div class='task-info'>" +
+      "<div class='task-name' style='" + (t.status==="done"?"text-decoration:line-through;color:#555":"") + "'>" + t.name + "</div>" +
+      "<div class='task-meta'>Due: " + t.due + " &nbsp;<span class='task-pri " + priCls + "'>" + priLabel + "</span></div>" +
+      "</div></div>";
+  });
+}
+
+renderPlanner("plannerInProgress", PLANNER_TASKS.filter(function(t){return t.status==="inprogress";}));
+renderPlanner("plannerUpNext", PLANNER_TASKS.filter(function(t){return t.status==="next";}));
+renderPlanner("plannerDone", PLANNER_TASKS.filter(function(t){return t.status==="done";}));
+
+document.getElementById("statTasks").textContent = PLANNER_TASKS.filter(function(t){return t.status!=="done";}).length;
+document.getElementById("statEmails").textContent = EMAILS.filter(function(e){return e.unread;}).length;
+document.getElementById("statEvents").textContent = EVENTS.length;
+
+// ---- FOCUS NOTES ----
+function addNote() {
+  var val = document.getElementById("focusInput").value.trim();
+  if(!val) return;
+  var notes = JSON.parse(localStorage.getItem("work_notes")||"[]");
+  notes.unshift({id:Date.now(),text:val,time:new Date().toLocaleString()});
+  localStorage.setItem("work_notes",JSON.stringify(notes));
+  document.getElementById("focusInput").value="";
+  document.getElementById("noteMsg").textContent="Saved!";
+  setTimeout(function(){document.getElementById("noteMsg").textContent="";},2000);
+  renderNotes();
+}
+
+function deleteNote(id) {
+  var notes = JSON.parse(localStorage.getItem("work_notes")||"[]");
+  notes = notes.filter(function(n){return n.id!==id;});
+  localStorage.setItem("work_notes",JSON.stringify(notes));
+  renderNotes();
+}
+
+function renderNotes() {
+  var notes = JSON.parse(localStorage.getItem("work_notes")||"[]");
+  var el = document.getElementById("notesList");
+  document.getElementById("statNotes").textContent = notes.length;
+  if(!notes.length){el.innerHTML="<div style='color:#555;font-size:.85rem;padding:8px 0'>No notes yet. Add a focus note above.</div>";return;}
+  el.innerHTML = notes.map(function(n){
+    return "<div class='focus-note'>" +
+      "<button class='focus-note-del' onclick='deleteNote(" + n.id + ")'>&#10005;</button>" +
+      "<div>" + n.text + "</div>" +
+      "<div class='focus-note-time'>" + n.time + "</div>" +
+      "</div>";
+  }).join("");
+}
+renderNotes();
+
+
+// ---- 11PM NIGHT BRIEF ----
+(function() {
+  var h = new Date().getHours();
+  if(h < 23) return;
+  var tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  var dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var tmrName = dayNames[tomorrow.getDay()];
+  var MARATHON_SESSIONS = {
+    2:"Week 1: Walk/Run 25min",
+    4:"Week 1: Walk/Run 25min",
+    6:"Week 1: Walk/Run 30min"
+  };
+  var tmrSession = MARATHON_SESSIONS[tomorrow.getDay()] || "Rest day";
+  var EVENTS = [
+    {d:new Date("2026-05-07"),title:"Local Flavs Campaign Presentation 5PM"},
+    {d:new Date("2026-05-08"),title:"Monthly Town Hall 3PM"},
+    {d:new Date("2026-05-20"),title:"Bi-Weekly Marketing Meeting 10AM"}
+  ];
+  var tmrEvent = "No meetings scheduled";
+  EVENTS.forEach(function(e) {
+    if(e.d.getFullYear()===tomorrow.getFullYear() && e.d.getMonth()===tomorrow.getMonth() && e.d.getDate()===tomorrow.getDate()) {
+      tmrEvent = e.title;
+    }
+  });
+  var html =
+    "<div class='nb-item'><span class='nb-icon'>&#128197;</span><div class='nb-text'><div class='nb-label' style='color:#00d4aa'>TOMORROW (" + tmrName.toUpperCase() + ")</div>" + tmrEvent + "</div></div>" +
+    "<div class='nb-item'><span class='nb-icon'>&#127939;</span><div class='nb-text'><div class='nb-label' style='color:#f59e0b'>MARATHON SESSION</div>" + tmrSession + "</div></div>" +
+    "<div class='nb-item'><span class='nb-icon'>&#128200;</span><div class='nb-text'><div class='nb-label' style='color:#7c3aed'>MARKETS OPEN</div>Bursa 9AM &bull; US market 9:30PM MYT</div></div>" +
+    "<div class='nb-item'><span class='nb-icon'>&#128221;</span><div class='nb-text'><div class='nb-label' style='color:#888'>TOP TASK</div>Review Planner before 10AM. Protect your morning focus block.</div></div>";
+  document.getElementById("nbContent").innerHTML = html;
+  document.getElementById("nightBrief").classList.add("show");
+})();
+
+function toggleNav(){document.getElementById("mobileNav").classList.toggle("open");}
+</script>
+
+<!-- 11PM NIGHT BRIEF BANNER -->
+<div class="night-brief" id="nightBrief">
+  <div class="nb-header">
+    <span style="font-size:1.3rem">&#127762;</span>
+    <div><div class="nb-title">11PM Brief</div><div class="nb-sub">Tomorrow&rsquo;s prep, DSMND.H</div></div>
+    <button class="nb-close" onclick="document.getElementById('nightBrief').classList.remove('show')">&#10005;</button>
+  </div>
+  <div id="nbContent"></div>
+  <div style="margin-top:12px;padding:8px 10px;background:#1a052e40;border-radius:6px;font-size:.76rem;color:#7c3aed">
+    &#127774; Wind down. Prep for tomorrow. Sleep by midnight.
+  </div>
+</div>
+
+</body>
+</html>

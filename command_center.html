@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Command Center | DSMND.H</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+a{text-decoration:none}
+.topnav{background:#111;border-bottom:1px solid #222;position:sticky;top:0;z-index:100}
+.nav-inner{display:flex;align-items:center;padding:0 20px;height:54px;gap:6px}
+.nav-brand{font-weight:700;font-size:1.05rem;color:#00d4aa;margin-right:auto;white-space:nowrap}
+.nav-links{display:flex;gap:2px}
+.nav-link{color:#aaa;padding:6px 12px;border-radius:6px;font-size:.85rem;transition:all .2s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:#1a1a1a;color:#00d4aa}
+.nav-ham{display:none;background:none;border:none;color:#aaa;font-size:1.4rem;cursor:pointer;margin-left:8px}
+.nav-mob{display:none;flex-direction:column;background:#111;border-top:1px solid #222;padding:8px 16px}
+.nav-mob.open{display:flex}
+.nav-mob a{color:#aaa;padding:10px 8px;border-bottom:1px solid #1a1a1a;font-size:.9rem}
+.nav-mob a:last-child{border-bottom:none}
+@media(max-width:720px){.nav-links{display:none}.nav-ham{display:block}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 24px}
+
+/* PA HERO */
+.pa-hero{padding:32px 0 0;animation:fadeUp .4s ease}
+.pa-time-chip{display:inline-flex;align-items:center;gap:6px;background:#141414;border:1px solid #222;border-radius:20px;padding:4px 14px;font-size:.75rem;color:#666;margin-bottom:16px}
+.pa-time-chip .live-dot{width:6px;height:6px;background:#00d4aa;border-radius:50%;animation:pulse 2s infinite}
+.pa-greeting{font-size:1.8rem;font-weight:800;margin-bottom:4px;line-height:1.2}
+.pa-greeting .name{background:linear-gradient(135deg,#00d4aa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pa-role{font-size:.85rem;color:#666;margin-bottom:24px}
+
+/* DAILY BRIEF */
+.brief-card{background:linear-gradient(135deg,#0d1a14,#0d1420);border:1px solid #00d4aa22;border-radius:16px;padding:24px;margin-bottom:20px;animation:fadeUp .5s ease .1s both}
+.brief-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+.brief-title{font-size:.72rem;font-weight:700;color:#00d4aa;text-transform:uppercase;letter-spacing:.14em;display:flex;align-items:center;gap:6px}
+.brief-date-badge{font-size:.75rem;color:#555;background:#141414;border-radius:8px;padding:4px 10px}
+.brief-quote{font-size:1rem;font-style:italic;color:#ddd;line-height:1.7;border-left:3px solid #00d4aa;padding-left:14px;margin-bottom:18px}
+.brief-quote-author{font-size:.78rem;color:#00d4aa;margin-top:4px;padding-left:14px}
+
+/* PRIORITIES */
+.priorities{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.priority-card{background:#0a0a0a40;border:1px solid #1e1e1e;border-radius:10px;padding:14px}
+.pri-num{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.pri-title{font-size:.9rem;font-weight:700;color:#e5e5e5;margin-bottom:4px}
+.pri-desc{font-size:.78rem;color:#777;line-height:1.5}
+.pri-tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.68rem;font-weight:700;margin-top:6px}
+@media(max-width:700px){.priorities{grid-template-columns:1fr}}
+
+/* ENERGY METER */
+.energy-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#0a0a0a50;border-radius:8px;flex-wrap:wrap;gap:10px}
+.energy-label{font-size:.75rem;color:#666;white-space:nowrap}
+.energy-bars{display:flex;gap:3px}
+.energy-bar{width:16px;height:16px;border-radius:3px}
+.energy-text{font-size:.82rem;color:#aaa;flex:1}
+.energy-action{font-size:.78rem;color:#00d4aa;font-weight:600}
+
+/* 11PM BRIEF */
+.tomorrow-card{display:none;background:linear-gradient(135deg,#1a052e,#0d1420);border:1px solid #7c3aed44;border-radius:14px;padding:20px;margin-bottom:20px;animation:fadeUp .4s ease}
+.tomorrow-card.show{display:block}
+
+/* QUICK STATS */
+.stats-strip{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.stat-chip{background:#141414;border:1px solid #222;border-radius:20px;padding:7px 16px;font-size:.78rem;color:#666;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.stat-chip strong{color:#e5e5e5}
+
+/* HUB GRID */
+.hub-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.hub-card{border-radius:14px;padding:22px 20px;transition:all .2s;position:relative;overflow:hidden;display:flex;flex-direction:column;cursor:pointer}
+.hub-card:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(0,0,0,.4)}
+.hub-card-icon{font-size:1.8rem;margin-bottom:12px}
+.hub-card-title{font-size:.95rem;font-weight:700;margin-bottom:5px}
+.hub-card-desc{font-size:.77rem;color:#777;line-height:1.5;flex:1;margin-bottom:12px}
+.hub-card-link{font-size:.78rem;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.hub-card-arrow{transition:transform .2s}
+.hub-card:hover .hub-card-arrow{transform:translateX(3px)}
+.hc-work{background:#141414;border:1px solid #00d4aa22}.hc-work .hub-card-link{color:#00d4aa}
+.hc-invest{background:#141414;border:1px solid #00d4aa33;animation:shimmer 3s infinite;background-size:200% 100%}
+.hc-invest .hub-card-link{color:#00d4aa}
+.hc-marathon{background:#141414;border:1px solid #f59e0b22}.hc-marathon .hub-card-link{color:#f59e0b}
+.hc-mamee{background:#141414;border:1px solid #7c3aed22}.hc-mamee .hub-card-link{color:#7c3aed}
+.hc-finance{background:#141414;border:1px solid #ef444422}.hc-finance .hub-card-link{color:#ef4444}
+.live-badge{position:absolute;top:12px;right:12px;display:flex;align-items:center;gap:4px;background:#052e1c;border-radius:10px;padding:2px 8px;font-size:.65rem;color:#00d4aa;font-weight:700}
+.live-badge-dot{width:5px;height:5px;background:#00d4aa;border-radius:50%;animation:pulse 1.5s infinite}
+@media(max-width:900px){.hub-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.hub-grid{grid-template-columns:1fr}}
+
+.section-title{font-size:.75rem;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.12em;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:"";flex:1;height:1px;background:#1a1a1a}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="nav-inner">
+    <a href="command_center.html" class="nav-brand">&#9889; Command Center</a>
+    <div class="nav-links">
+      <a href="work.html" class="nav-link">&#128188; Work</a>
+      <a href="invest.html" class="nav-link">&#128200; Invest</a>
+      <a href="marathon.html" class="nav-link">&#127939; Marathon</a>
+      <a href="https://dsmndh.github.io/Daily_Brief/" target="_blank" class="nav-link">&#127836; Mamee</a>
+      <a href="finance.html" class="nav-link">&#128176; Finance</a>
+    </div>
+    <button class="nav-ham" onclick="toggleNav()">&#9776;</button>
+  </div>
+  <div class="nav-mob" id="mobileNav">
+    <a href="command_center.html">&#9889; Hub</a>
+    <a href="work.html">&#128188; Work</a>
+    <a href="invest.html">&#128200; Invest</a>
+    <a href="marathon.html">&#127939; Marathon</a>
+    <a href="https://dsmndh.github.io/Daily_Brief/" target="_blank">&#127836; Mamee</a>
+    <a href="finance.html">&#128176; Finance</a>
+  </div>
+</nav>
+
+<div class="wrap">
+<!-- PA HERO -->
+<div class="pa-hero">
+  <div class="pa-time-chip"><span class="live-dot"></span><span id="liveTime">--:-- --</span></div>
+  <div class="pa-greeting">
+    <span id="greetingEmoji"></span> <span id="greetingText">Good morning,</span>
+    <div class="name">DSMND.H</div>
+  </div>
+  <div class="pa-role" id="paRole">Creative Director &mdash; Mamee Double Decker</div>
+</div>
+
+<!-- DAILY BRIEF -->
+  <div class="brief-card" id="dailyBrief">
+  <div class="brief-header">
+    <div class="brief-title">&#129504; Your PA Brief</div>
+    <div class="brief-date-badge" id="briefDate"></div>
+  </div>
+  <div class="brief-quote" id="briefQuote">Loading your brief...</div>
+  <div class="brief-quote-author" id="briefAuthor"></div>
+  <div class="priorities" id="prioritiesGrid"></div>
+  <div class="energy-row" id="energyRow">
+    <span class="energy-label">Today&rsquo;s Energy</span>
+    <div class="energy-bars" id="energyBars"></div>
+    <span class="energy-text" id="energyText"></span>
+    <span class="energy-action" id="energyAction"></span>
+  </div>
+</div>
+
+<!-- 11PM TOMORROW BRIEF (shown only after 11pm) -->
+  <div class="tomorrow-card" id="tomorrowBrief">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <span style="font-size:1.4rem">&#127762;</span>
+    <div>
+      <div style="font-size:.72rem;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.12em">11PM Review &mdash; Tomorrow&rsquo;s Brief</div>
+      <div style="font-size:.8rem;color:#888">Wind down. Here is what tomorrow looks like.</div>
+    </div>
+  </div>
+  <div id="tomorrowContent"></div>
+</div>
+
+<!-- STATS -->
+  <div class="stats-strip" id="statsStrip"></div>
+<!-- HUB GRID -->
+  <div class="section-title">Your Sections</div>
+  <div class="hub-grid">
+    <a href="work.html" class="hub-card hc-work">
+      <div class="hub-card-icon">&#128188;</div>
+      <div class="hub-card-title">Work</div>
+      <div class="hub-card-desc">Outlook, calendar, Planner tasks and daily quote. Stay sharp on what matters.</div>
+      <div class="hub-card-link">Open Work <span class="hub-card-arrow">&#8594;</span></div>
+    </a>
+    <a href="invest.html" class="hub-card hc-invest">
+      <div class="live-badge"><div class="live-badge-dot"></div>LIVE</div>
+      <div class="hub-card-icon">&#128200;</div>
+      <div class="hub-card-title">Investments</div>
+      <div class="hub-card-desc">Live crypto, market status, RM100K trajectory, Moomoo &amp; M+ picks. Auto-refreshes every 30s.</div>
+      <div class="hub-card-link">Open Invest <span class="hub-card-arrow">&#8594;</span></div>
+    </a>
+    <a href="marathon.html" class="hub-card hc-marathon">
+      <div class="hub-card-icon">&#127939;</div>
+      <div class="hub-card-title">Marathon</div>
+      <div class="hub-card-desc">28-week Kobe plan, live countdown, weekly sessions, run log and mileage chart.</div>
+      <div class="hub-card-link">Open Marathon <span class="hub-card-arrow">&#8594;</span></div>
+    </a>
+    <a href="https://dsmndh.github.io/Daily_Brief/" target="_blank" class="hub-card hc-mamee">
+      <div class="hub-card-icon">&#127836;</div>
+      <div class="hub-card-title">Mamee Daily Brief</div>
+      <div class="hub-card-desc">Brand dashboard with campaign updates, social performance and brand news.</div>
+      <div class="hub-card-link">Open Brief &#8599;</div>
+    </a>
+    <a href="finance.html" class="hub-card hc-finance">
+      <div class="hub-card-icon">&#128176;</div>
+      <div class="hub-card-title">Finance</div>
+      <div class="hub-card-desc">Personal finance dashboard, budget tracking and financial overview for 2026.</div>
+      <div class="hub-card-link">Open Finance <span class="hub-card-arrow">&#8594;</span></div>
+    </a>
+    <a href="https://github.com/dsmndh" target="_blank" class="hub-card" style="background:#141414;border:1px solid #1e1e1e">
+      <div class="hub-card-icon">&#128187;</div>
+      <div class="hub-card-title" style="color:#888">GitHub</div>
+      <div class="hub-card-desc" style="color:#555">Host and update your Command Center. Push changes to deploy.</div>
+      <div class="hub-card-link" style="color:#555">Open GitHub &#8599;</div>
+    </a>
+  </div>
+</div><!-- end outer wrap -->
+
+<script>
+// ---- CONSTANTS ----
+var RACE_DATE = new Date("2026-11-15");
+var START_DATE = new Date("2026-05-05");
+var DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+var QUOTES = [
+  {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
+  {q:"It always seems impossible until it is done.",a:"Nelson Mandela"},
+  {q:"Do what you can, with what you have, where you are.",a:"Theodore Roosevelt"},
+  {q:"Your work is going to fill a large part of your life. The only way to be truly satisfied is to do great work.",a:"Steve Jobs"},
+  {q:"Discipline is choosing between what you want now and what you want most.",a:"Abraham Lincoln"},
+  {q:"The harder you work for something, the greater you will feel when you achieve it.",a:"Unknown"},
+  {q:"Do not watch the clock. Do what it does. Keep going.",a:"Sam Levenson"},
+  {q:"You do not have to be great to start, but you have to start to be great.",a:"Zig Ziglar"},
+  {q:"Opportunities do not happen. You create them.",a:"Chris Grosser"},
+  {q:"Focus on being productive instead of busy.",a:"Tim Ferriss"},
+  {q:"The best way to predict the future is to create it.",a:"Peter Drucker"},
+  {q:"Leadership is not about being in charge. It is about taking care of those in your charge.",a:"Simon Sinek"},
+  {q:"In the middle of every difficulty lies opportunity.",a:"Albert Einstein"},
+  {q:"A year from now you may wish you had started today.",a:"Karen Lamb"},
+  {q:"Creative work is not a selfish act. It is a gift to the world.",a:"Steven Pressfield"},
+  {q:"What would you attempt to do if you knew you could not fail?",a:"Robert H. Schuller"},
+  {q:"Energy and persistence conquer all things.",a:"Benjamin Franklin"},
+  {q:"Your vision will become clear only when you can look into your own heart.",a:"Carl Jung"},
+  {q:"The only limit to our realization of tomorrow will be our doubts of today.",a:"Franklin D. Roosevelt"},
+  {q:"It is not the mountain we conquer, but ourselves.",a:"Sir Edmund Hillary"}
+];
+
+var MARATHON_PLAN = [
+  {w:1,tue:"Walk/Run 20min",thu:"Walk/Run 20min",sat:"Walk/Run 25min"},
+  {w:2,tue:"Walk/Run 25min",thu:"Walk/Run 25min",sat:"Walk/Run 30min"},
+  {w:3,tue:"Walk/Run 30min",thu:"Walk/Run 30min",sat:"Walk/Run 35min"},
+  {w:4,tue:"Easy walk 20min",thu:"Walk/Run 25min",sat:"Walk/Run 30min"},
+  {w:5,tue:"Easy Run 3km",thu:"Easy Run 3km",sat:"Easy Run 5km"},
+  {w:6,tue:"Easy Run 4km",thu:"Easy Run 4km",sat:"Easy Run 6km"},
+  {w:7,tue:"Easy Run 5km",thu:"Easy Run 5km",sat:"Long Run 8km"},
+  {w:8,tue:"Easy Run 4km",thu:"Easy Run 4km",sat:"Easy Run 6km"},
+  {w:9,tue:"Easy Run 5km",thu:"Easy Run 5km",sat:"Long Run 10km"},
+  {w:10,tue:"Easy Run 6km",thu:"Easy Run 6km",sat:"Long Run 12km"},
+  {w:11,tue:"Easy Run 6km",thu:"Easy Run 6km",sat:"Long Run 14km"},
+  {w:12,tue:"Easy Run 5km",thu:"Easy Run 5km",sat:"Easy Run 10km"},
+  {w:13,tue:"Easy Run 7km",thu:"Easy Run 7km",sat:"Long Run 16km"},
+  {w:14,tue:"Easy Run 7km",thu:"Tempo 7km",sat:"Long Run 18km"},
+  {w:15,tue:"Easy Run 8km",thu:"Tempo 8km",sat:"Long Run 20km"},
+  {w:16,tue:"Easy Run 5km",thu:"Easy Run 5km",sat:"Easy Run 12km"},
+  {w:17,tue:"Easy Run 8km",thu:"Tempo 8km",sat:"Long Run 22km"},
+  {w:18,tue:"Easy Run 8km",thu:"Tempo 8km",sat:"Long Run 24km"},
+  {w:19,tue:"Easy Run 7km",thu:"Easy Run 7km",sat:"Long Run 20km"},
+  {w:20,tue:"Easy Run 10km",thu:"Tempo 10km",sat:"Long Run 28km"},
+  {w:21,tue:"Easy Run 10km",thu:"Tempo 10km",sat:"Long Run 30km"},
+  {w:22,tue:"Easy Run 7km",thu:"Easy Run 7km",sat:"Easy Run 16km"},
+  {w:23,tue:"Easy Run 8km",thu:"Tempo 8km",sat:"Long Run 24km"},
+  {w:24,tue:"Easy Run 7km",thu:"Tempo 7km",sat:"Long Run 18km"},
+  {w:25,tue:"Easy Run 5km",thu:"Tempo 5km",sat:"Long Run 12km"},
+  {w:26,tue:"Easy Run 4km",thu:"Easy Run 4km",sat:"Easy Run 8km"},
+  {w:27,tue:"Easy Run 4km",thu:"Easy Run 3km",sat:"Shakeout 2km"},
+  {w:28,tue:"Shakeout 3km",thu:"Easy 2km",sat:"RACE 42.195km"}
+];
+
+var CALENDAR_EVENTS = [
+  {title:"MP FIFA Video — DeTouche Post PJ",date:new Date("2026-05-05"),time:"5:00 PM",color:"#7c3aed"},
+  {title:"Local Flavs Campaign Presentation",date:new Date("2026-05-07"),time:"5:00 PM",color:"#3b82f6"},
+  {title:"Monthly Town Hall",date:new Date("2026-05-08"),time:"3:00 PM",color:"#f59e0b"},
+  {title:"Bi-Weekly Marketing Meeting",date:new Date("2026-05-20"),time:"10:00 AM",color:"#00d4aa"},
+  {title:"Bi-Weekly Marketing Meeting",date:new Date("2026-06-02"),time:"10:00 AM",color:"#00d4aa"}
+];
+
+var PLANNER_TASKS = [
+  "Finalise Double Decker TVC storyboard",
+  "Review Local Flavs campaign brief",
+  "Prepare FIFA video shoot notes",
+  "Submit Raya campaign post-mortem",
+  "Update brand guidelines deck",
+  "Brief agency on Q2 social calendar"
+];
+
+// ---- TIME & GREETING ----
+function getMarathonWeek() {
+  var diff = new Date() - START_DATE;
+  return Math.max(1, Math.min(28, Math.floor(diff/(7*24*60*60*1000))+1));
+}
+
+function updateTime() {
+  var now = new Date();
+  var h = now.getHours(); var m = now.getMinutes(); var s = now.getSeconds();
+  var ampm = h >= 12 ? "PM" : "AM";
+  var h12 = h % 12 || 12;
+  document.getElementById("liveTime").textContent = h12 + ":" + String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0") + " " + ampm;
+  if(h >= 5 && h < 12) { document.getElementById("greetingEmoji").textContent = ""; document.getElementById("greetingText").textContent = "Good morning,"; }
+  else if(h >= 12 && h < 17) { document.getElementById("greetingEmoji").textContent = ""; document.getElementById("greetingText").textContent = "Good afternoon,"; }
+  else if(h >= 17 && h < 21) { document.getElementById("greetingEmoji").textContent = ""; document.getElementById("greetingText").textContent = "Good evening,"; }
+  else { document.getElementById("greetingEmoji").textContent = ""; document.getElementById("greetingText").textContent = "Night owl mode,"; }
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+// ---- DAILY BRIEF ----
+(function buildBrief() {
+  var now = new Date();
+  var dayOfWeek = now.getDay();
+  var dayOfYear = Math.floor((now - new Date(now.getFullYear(),0,0))/(1000*60*60*24));
+  var wk = getMarathonWeek();
+  var wkPlan = MARATHON_PLAN[wk-1] || MARATHON_PLAN[0];
+
+  // Date badge
+  document.getElementById("briefDate").textContent = DAY_NAMES[dayOfWeek] + ", " + MONTH_NAMES[now.getMonth()] + " " + now.getDate();
+
+  // Quote
+  var qi = dayOfYear % QUOTES.length;
+  document.getElementById("briefQuote").textContent = QUOTES[qi].q;
+  document.getElementById("briefAuthor").textContent = QUOTES[qi].a !== "Unknown" ? "— " + QUOTES[qi].a : "";
+
+  // Today's events
+  var todayEvents = CALENDAR_EVENTS.filter(function(e) {
+    return e.date.getFullYear()===now.getFullYear() && e.date.getMonth()===now.getMonth() && e.date.getDate()===now.getDate();
+  });
+
+  // Tomorrow's events
+  var tmr = new Date(now); tmr.setDate(tmr.getDate()+1);
+  var tmrEvents = CALENDAR_EVENTS.filter(function(e) {
+    return e.date.getFullYear()===tmr.getFullYear() && e.date.getMonth()===tmr.getMonth() && e.date.getDate()===tmr.getDate();
+  });
+
+  // Marathon session today
+  var dayMap = {2:"tue",4:"thu",6:"sat"};
+  var todaySession = dayMap[dayOfWeek] ? wkPlan[dayMap[dayOfWeek]] : null;
+
+  // Build priorities based on day + context
+  var priorities = [];
+
+  // Priority 1: Work focus
+  if(todayEvents.length > 0) {
+    priorities.push({num:"01",color:"#00d4aa",tag:"MEETING",tagBg:"#052e1c",tagColor:"#00d4aa",title:todayEvents[0].title,desc:todayEvents[0].time + ". Prepare your materials and arrive 10 minutes early."});
+  } else if(dayOfWeek === 1) {
+    priorities.push({num:"01",color:"#00d4aa",tag:"MONDAY",tagBg:"#052e1c",tagColor:"#00d4aa",title:"Set the week. Review your Planner.",desc:"Monday sets the tone. Clear your inbox, set 3 wins for the week. Review all active campaigns."});
+  } else if(dayOfWeek === 5) {
+    priorities.push({num:"01",color:"#00d4aa",tag:"FRIDAY",tagBg:"#052e1c",tagColor:"#00d4aa",title:"Wrap the week before you leave.",desc:"Send your week-end update, close open loops. Start fresh on Monday."});
+  } else {
+    priorities.push({num:"01",color:"#00d4aa",tag:"WORK",tagBg:"#052e1c",tagColor:"#00d4aa",title:PLANNER_TASKS[dayOfYear % PLANNER_TASKS.length],desc:"Keep creative direction sharp. Block 90 minutes of deep work before noon."});
+  }
+
+  // Priority 2: Marathon
+  if(todaySession) {
+    priorities.push({num:"02",color:"#f59e0b",tag:"RUN TODAY",tagBg:"#2e1a05",tagColor:"#f59e0b",title:"Week " + wk + ": " + todaySession,desc:"Best time: early morning or after work. Log your run when done. Every session counts."});
+  } else if(dayOfWeek === 0 || dayOfWeek === 3) {
+    priorities.push({num:"02",color:"#f59e0b",tag:"REST DAY",tagBg:"#2e1a05",tagColor:"#f59e0b",title:"Recovery day. Week " + wk + " of 28.",desc:"Rest is training. Stretch, hydrate and sleep 7-8 hours. Your legs are adapting."});
+  } else {
+    priorities.push({num:"02",color:"#f59e0b",tag:"MARATHON",tagBg:"#2e1a05",tagColor:"#f59e0b",title:"Week " + wk + " of 28 — Check your plan.",desc:Math.ceil((RACE_DATE - now)/(1000*60*60*24)) + " days to Kobe. Stay consistent. Every run is a deposit."});
+  }
+
+  // Priority 3: Investment / Finance
+  var hour = now.getHours();
+  if(hour >= 21 || hour < 9) {
+    priorities.push({num:"03",color:"#7c3aed",tag:"INVEST",tagBg:"#1a052e",tagColor:"#7c3aed",title:"Check your portfolio tonight.",desc:"Review your positions. US market closed. Good time to plan DCA for this week or log expenses."});
+  } else {
+    priorities.push({num:"03",color:"#7c3aed",tag:"INVEST",tagBg:"#1a052e",tagColor:"#7c3aed",title:"US Market active. Check live prices.",desc:"Monitor NVDA and VOO today. DCA on any red day &gt;2%. Your crypto positions refreshing every 30s."});
+  }
+
+  var grid = document.getElementById("prioritiesGrid");
+  priorities.forEach(function(p) {
+    grid.innerHTML += "<div class='priority-card' style='border-color:"+p.color+"22'>" +
+      "<div class='pri-num' style='color:"+p.color+"'>Priority " + p.num + "</div>" +
+      "<div class='pri-title'>" + p.title + "</div>" +
+      "<div class='pri-desc'>" + p.desc + "</div>" +
+      "<span class='pri-tag' style='background:"+p.tagBg+";color:"+p.tagColor+"'>" + p.tag + "</span>" +
+      "</div>";
+  });
+
+  // Energy meter based on day of week
+  var energyLevels = [4,8,8,7,7,6,3]; // Sun-Sat
+  var energyLevel = energyLevels[dayOfWeek];
+  var energyDescriptions = ["","High","High","High","High","High","Moderate","Low"];
+  var energyActions = [
+    "Rest and recharge. You deserve it.",
+    "Monday drive. Tackle the hardest task first.",
+    "Mid-week power. Push through your deep work.",
+    "Hump day. Stay focused, you are halfway there.",
+    "Strong Thursday. Finish the week strong.",
+    "Friday energy. Wrap up and plan next week.",
+    "Weekend mode. Rest, reflect, enjoy."
+  ];
+  var bars = document.getElementById("energyBars");
+  for(var i=0;i<10;i++) {
+    var filled = i < energyLevel;
+    bars.innerHTML += "<div class='energy-bar' style='background:" + (filled?"#00d4aa":"#1a1a1a") + "'></div>";
+  }
+  document.getElementById("energyText").textContent = DAY_NAMES[dayOfWeek] + " energy: " + energyLevel + "/10";
+  document.getElementById("energyAction").textContent = energyActions[dayOfWeek];
+
+  // Stats strip
+  var days = Math.ceil((RACE_DATE - now)/(1000*60*60*24));
+  var statsHtml =
+    "<div class='stat-chip'>&#127939; Kobe Race: <strong>" + days + " days</strong></div>" +
+    "<div class='stat-chip'>&#128197; Today: <strong>" + (todayEvents.length ? todayEvents.length + " event" + (todayEvents.length>1?"s":"") : "No events") + "</strong></div>" +
+    "<div class='stat-chip'>&#9978; Marathon: <strong>Week " + wk + " / 28</strong></div>" +
+    "<div class='stat-chip'>&#128200; Invest: <strong>Live every 30s</strong></div>" +
+    (todaySession ? "<div class='stat-chip'>&#127939; Run today: <strong>" + todaySession + "</strong></div>" : "");
+  document.getElementById("statsStrip").innerHTML = statsHtml;
+
+  // 11pm tomorrow brief
+  var h = now.getHours();
+  if(h >= 23) {
+    var tCard = document.getElementById("tomorrowBrief");
+    tCard.classList.add("show");
+    var tmrDayName = DAY_NAMES[tmr.getDay()];
+    var tmrSession = dayMap[tmr.getDay()] ? wkPlan[dayMap[tmr.getDay()]] : null;
+    var tmrEvt = tmrEvents.length ? tmrEvents[0].title + " at " + tmrEvents[0].time : "No meetings scheduled";
+    document.getElementById("tomorrowContent").innerHTML =
+      "<div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;flex-wrap:wrap'>" +
+      "<div style='background:#0a0a0a50;border-radius:8px;padding:12px'><div style='font-size:.7rem;color:#7c3aed;font-weight:700;margin-bottom:6px'>&#128197; " + tmrDayName + " CALENDAR</div><div style='font-size:.82rem;color:#ccc'>" + tmrEvt + "</div></div>" +
+      "<div style='background:#0a0a0a50;border-radius:8px;padding:12px'><div style='font-size:.7rem;color:#f59e0b;font-weight:700;margin-bottom:6px'>&#127939; MARATHON</div><div style='font-size:.82rem;color:#ccc'>" + (tmrSession ? "Week " + wk + ": " + tmrSession : "Rest day — sleep well") + "</div></div>" +
+      "<div style='background:#0a0a0a50;border-radius:8px;padding:12px'><div style='font-size:.7rem;color:#00d4aa;font-weight:700;margin-bottom:6px'>&#128200; MARKET OPENS</div><div style='font-size:.82rem;color:#ccc'>US opens 9:30pm MYT. Bursa opens 9am MYT. Check positions after breakfast.</div></div>" +
+      "</div>" +
+      "<div style='margin-top:12px;padding:10px 14px;background:#1a052e40;border-radius:8px;font-size:.82rem;color:#aaa'>&#127762; Wind down now. Lay out your gear if you have a morning run. Sleep by midnight. Good night, DSMND.H.</div>";
+  }
+})();
+
+function toggleNav(){document.getElementById("mobileNav").classList.toggle("open");}
+</script>
+</body>
+</html>

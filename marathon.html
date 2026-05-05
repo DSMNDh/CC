@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marathon Training | Command Center</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+a{text-decoration:none}
+
+/* NAV */
+.topnav{background:#111;border-bottom:1px solid #222;position:sticky;top:0;z-index:100}
+.nav-inner{display:flex;align-items:center;padding:0 20px;height:54px;gap:6px}
+.nav-brand{font-weight:700;font-size:1.05rem;color:#00d4aa;margin-right:auto;white-space:nowrap}
+.nav-links{display:flex;gap:2px}
+.nav-link{color:#aaa;padding:6px 12px;border-radius:6px;font-size:0.85rem;transition:all .2s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:#1a1a1a;color:#00d4aa}
+.nav-ham{display:none;background:none;border:none;color:#aaa;font-size:1.4rem;cursor:pointer;margin-left:8px}
+.nav-mob{display:none;flex-direction:column;background:#111;border-top:1px solid #222;padding:8px 16px}
+.nav-mob.open{display:flex}
+.nav-mob a{color:#aaa;padding:10px 8px;border-bottom:1px solid #1a1a1a;font-size:.9rem}
+.nav-mob a:last-child{border-bottom:none}
+@media(max-width:720px){.nav-links{display:none}.nav-ham{display:block}}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0d1b2a 0%,#1a0533 50%,#0d1b2a 100%);padding:40px 20px 32px;text-align:center;border-bottom:1px solid #222;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300d4aa' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");opacity:.5}
+.hero-sub{font-size:.75rem;color:#00d4aa;letter-spacing:.2em;text-transform:uppercase;margin-bottom:8px;position:relative}
+.hero-title{font-size:2rem;font-weight:800;letter-spacing:.05em;margin-bottom:4px;position:relative}
+.hero-dist{font-size:.9rem;color:#888;margin-bottom:24px;position:relative}
+.countdown-wrap{display:flex;gap:16px;justify-content:center;margin-bottom:24px;position:relative;flex-wrap:wrap}
+.cd-unit{text-align:center;min-width:64px}
+.cd-num{font-size:2.2rem;font-weight:700;color:#00d4aa;line-height:1;display:block}
+.cd-label{font-size:.65rem;color:#666;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+.progress-section{max-width:560px;margin:0 auto;position:relative}
+.prog-header{display:flex;justify-content:space-between;font-size:.8rem;color:#888;margin-bottom:8px}
+.prog-bar{height:8px;background:#1a1a1a;border-radius:4px;overflow:hidden;margin-bottom:6px}
+.prog-fill{height:100%;background:linear-gradient(90deg,#00d4aa,#7c3aed);border-radius:4px;transition:width .5s}
+.prog-phase{font-size:.75rem;color:#00d4aa;text-align:center}
+
+/* LAYOUT */
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px}
+.section{margin-bottom:28px}
+.section-title{font-size:.8rem;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:"";flex:1;height:1px;background:#1e1e1e}
+
+/* PHASE CARDS */
+.phases-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.phase-card{background:#141414;border:1px solid #222;border-radius:10px;padding:14px 10px;text-align:center;transition:all .2s;cursor:default}
+.phase-card.active-phase{border-color:#00d4aa;background:#071a15}
+.phase-card.done-phase{opacity:.5}
+.phase-num{font-size:.65rem;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em}
+.phase-name{font-size:.78rem;font-weight:700;margin-bottom:4px}
+.phase-weeks{font-size:.7rem;color:#666}
+.phase-you{display:inline-block;background:#00d4aa;color:#000;font-size:.6rem;font-weight:700;padding:1px 7px;border-radius:20px;margin-top:6px}
+@media(max-width:800px){.phases-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:500px){.phases-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* WEEK SESSIONS */
+.sessions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.session-card{background:#141414;border:1px solid #222;border-radius:12px;padding:18px;transition:all .2s}
+.session-card.done{border-color:#00d4aa20;opacity:.7}
+.sess-day{font-size:.7rem;color:#666;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.sess-type{font-size:1rem;font-weight:700;margin-bottom:2px}
+.sess-dist{font-size:.85rem;color:#00d4aa;margin-bottom:10px}
+.sess-desc{font-size:.8rem;color:#888;margin-bottom:14px;line-height:1.5}
+.sess-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.85rem;color:#aaa}
+.sess-check input{accent-color:#00d4aa;width:16px;height:16px;cursor:pointer}
+.sess-check.checked{color:#00d4aa}
+@media(max-width:700px){.sessions-grid{grid-template-columns:1fr}}
+
+/* TIP */
+.tip-card{background:linear-gradient(135deg,#071a15,#0d1b2a);border:1px solid #00d4aa33;border-radius:12px;padding:20px 24px;display:flex;align-items:flex-start;gap:16px}
+.tip-icon{font-size:1.8rem;flex-shrink:0}
+.tip-label{font-size:.7rem;color:#00d4aa;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.tip-text{font-size:.9rem;color:#ccc;line-height:1.6}
+
+/* CHART */
+.chart-card{background:#141414;border:1px solid #222;border-radius:12px;padding:20px}
+.chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.chart-title{font-size:.95rem;font-weight:600;color:#aaa}
+
+/* RUN LOG */
+.log-form{background:#141414;border:1px solid #222;border-radius:12px;padding:20px;margin-bottom:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:.75rem;color:#666;text-transform:uppercase;letter-spacing:.08em}
+.form-group input,.form-group select,.form-group textarea{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;color:#e5e5e5;padding:9px 12px;font-size:.875rem;outline:none;transition:border .2s;width:100%}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#00d4aa}
+.form-group textarea{resize:vertical;min-height:70px}
+.btn{padding:9px 20px;border:none;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s}
+.btn-green{background:#00d4aa;color:#000}
+.btn-green:hover{background:#00bfa5}
+.btn-red{background:transparent;border:1px solid #ef444440;color:#ef4444;padding:4px 10px;font-size:.75rem;border-radius:6px}
+.btn-red:hover{background:#ef444420}
+.log-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.log-table th{background:#1a1a1a;color:#666;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;padding:10px 12px;text-align:left;border-bottom:1px solid #222}
+.log-table td{padding:10px 12px;border-bottom:1px solid #1a1a1a;color:#ccc;vertical-align:middle}
+.log-table tr:last-child td{border-bottom:none}
+.log-table tr:hover td{background:#141414}
+.no-runs{text-align:center;color:#555;padding:24px;font-size:.9rem}
+@media(max-width:700px){.form-row{grid-template-columns:1fr 1fr}.form-row>:last-child{grid-column:1/-1}}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}}
+
+/* PLAN TABLE */
+.phase-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.phase-tab{padding:6px 14px;border-radius:20px;border:1px solid #2a2a2a;background:transparent;color:#888;font-size:.8rem;cursor:pointer;transition:all .2s}
+.phase-tab.active{background:#00d4aa;color:#000;border-color:#00d4aa;font-weight:700}
+.plan-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.plan-table th{background:#1a1a1a;color:#555;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;padding:9px 10px;text-align:left;position:sticky;top:0}
+.plan-table td{padding:9px 10px;border-bottom:1px solid #191919;color:#bbb;vertical-align:top}
+.plan-table tr.current-week td{background:#071a1580;border-left:3px solid #00d4aa}
+.plan-table tr:hover td{background:#161616}
+.wk-num{color:#555;font-weight:600}
+.sess-pill{display:inline-block;background:#1a1a1a;border-radius:4px;padding:2px 7px;margin:1px;color:#ccc;font-size:.75rem}
+.phase-badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:600}
+.pb1{background:#052e1c;color:#00d4aa}
+.pb2{background:#051b2e;color:#3b82f6}
+.pb3{background:#2e1a05;color:#f59e0b}
+.pb4{background:#1a052e;color:#7c3aed}
+.pb5{background:#2e0505;color:#ef4444}
+.table-wrap{overflow-x:auto}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .hero-title{font-size:1.4rem}
+  .cd-num{font-size:1.6rem}
+  .cd-unit{min-width:48px}
+  .wrap{padding:16px 12px}
+}
+
+/* 11PM NIGHT BRIEF */
+.night-brief{display:none;position:fixed;bottom:20px;right:20px;max-width:340px;width:calc(100vw - 40px);background:linear-gradient(135deg,#1a052e,#0d1420);border:1px solid #7c3aed66;border-radius:16px;padding:18px 20px;z-index:999;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:slideUp .4s ease}
+.night-brief.show{display:block}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.nb-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.nb-close{margin-left:auto;background:none;border:none;color:#555;cursor:pointer;font-size:1.1rem;padding:0;line-height:1}
+.nb-close:hover{color:#aaa}
+.nb-title{font-size:.72rem;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.nb-sub{font-size:.78rem;color:#888;margin-top:1px}
+.nb-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #1e1e1e;font-size:.82rem;align-items:flex-start}
+.nb-item:last-child{border-bottom:none}
+.nb-icon{flex-shrink:0;margin-top:1px}
+.nb-text{color:#ccc;line-height:1.4}
+.nb-label{font-size:.68rem;font-weight:700;margin-bottom:2px}
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <div class="nav-inner">
+    <a href="command_center.html" class="nav-brand">&#9889; Command Center</a>
+    <div class="nav-links">
+      <a href="work.html" class="nav-link">&#128188; Work</a>
+      <a href="invest.html" class="nav-link">&#128200; Invest</a>
+      <a href="marathon.html" class="nav-link active">&#127939; Marathon</a>
+      <a href="https://dsmndh.github.io/Daily_Brief/" target="_blank" class="nav-link">&#127836; Mamee</a>
+      <a href="finance.html" class="nav-link">&#128176; Finance</a>
+    </div>
+    <button class="nav-ham" onclick="toggleNav()">&#9776;</button>
+  </div>
+  <div class="nav-mob" id="mobileNav">
+    <a href="command_center.html">&#9889; Hub</a>
+    <a href="work.html">&#128188; Work</a>
+    <a href="invest.html">&#128200; Invest</a>
+    <a href="marathon.html">&#127939; Marathon</a>
+    <a href="https://dsmndh.github.io/Daily_Brief/" target="_blank">&#127836; Mamee</a>
+    <a href="finance.html">&#128176; Finance</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-sub">&#127939; Race Day Countdown</div>
+  <div class="hero-title">KOBE FULL MARATHON 2026</div>
+  <div class="hero-dist">42.195 km &nbsp;|&nbsp; Nov 15, 2026 &nbsp;|&nbsp; Kobe, Japan &nbsp;|&nbsp; Starting from Zero</div>
+  <div class="countdown-wrap">
+    <div class="cd-unit"><span class="cd-num" id="cdDays">--</span><div class="cd-label">Days</div></div>
+    <div class="cd-unit"><span class="cd-num" id="cdHours">--</span><div class="cd-label">Hours</div></div>
+    <div class="cd-unit"><span class="cd-num" id="cdMins">--</span><div class="cd-label">Mins</div></div>
+    <div class="cd-unit"><span class="cd-num" id="cdSecs">--</span><div class="cd-label">Secs</div></div>
+  </div>
+  <div class="progress-section">
+    <div class="prog-header">
+      <span>Week <span id="currentWeekNum">1</span> of 28</span>
+      <span id="progPct">0%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-phase" id="currentPhaseName">Phase 1: Base Building</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- PHASE OVERVIEW -->
+<div class="section">
+  <div class="section-title">Training Phases</div>
+  <div class="phases-grid" id="phaseCards"></div>
+</div>
+
+<!-- CURRENT WEEK -->
+<div class="section">
+  <div class="section-title">This Week &mdash; Week <span id="weekBadge">1</span></div>
+  <div class="sessions-grid" id="sessionCards"></div>
+</div>
+
+<!-- WEEKLY TIP -->
+<div class="section">
+  <div class="tip-card">
+    <div class="tip-icon">&#128161;</div>
+    <div>
+      <div class="tip-label">Weekly Tip</div>
+      <div class="tip-text" id="weeklyTip">Loading your weekly tip...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MILEAGE CHART -->
+<div class="section">
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">&#128200; Weekly Mileage Progression</div>
+      <div style="font-size:.78rem;color:#555">Target vs Actual (km)</div>
+    </div>
+    <canvas id="mileageChart" height="90"></canvas>
+  </div>
+</div>
+
+<!-- RUN LOG -->
+<div class="section">
+  <div class="section-title">Log a Run</div>
+  <div class="log-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="runDate">
+      </div>
+      <div class="form-group">
+        <label>Distance (km)</label>
+        <input type="number" id="runDist" placeholder="e.g. 8.5" step="0.1" min="0">
+      </div>
+      <div class="form-group">
+        <label>Duration (min)</label>
+        <input type="number" id="runDuration" placeholder="e.g. 50" min="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Run Type</label>
+        <select id="runType">
+          <option value="Easy">Easy Run</option>
+          <option value="Tempo">Tempo Run</option>
+          <option value="Long">Long Run</option>
+          <option value="Race">Race</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group" style="grid-column:span 2">
+        <label>Notes</label>
+        <input type="text" id="runNotes" placeholder="How did it feel? Any highlights...">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-green" onclick="logRun()">&#43; Log Run</button>
+      <span id="logMsg" style="font-size:.8rem;color:#00d4aa"></span>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">&#128337; Run History</div>
+      <span id="totalKm" style="font-size:.8rem;color:#00d4aa"></span>
+    </div>
+    <div class="table-wrap">
+      <table class="log-table">
+        <thead><tr><th>Date</th><th>Distance</th><th>Duration</th><th>Pace</th><th>Type</th><th>Notes</th><th></th></tr></thead>
+        <tbody id="runTableBody"><tr><td colspan="7" class="no-runs">No runs logged yet. Add your first run above!</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FULL 28-WEEK PLAN -->
+<div class="section">
+  <div class="section-title">Full 28-Week Training Plan</div>
+  <div class="phase-tabs" id="phaseTabs"></div>
+  <div class="chart-card">
+    <div class="table-wrap">
+      <table class="plan-table">
+        <thead><tr><th>Wk</th><th>Dates</th><th>Phase</th><th>Tuesday</th><th>Thursday</th><th>Saturday</th><th>Total</th></tr></thead>
+        <tbody id="planBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- end wrap -->
+
+<script>
+// ---- DATA ----
+var RACE_DATE = new Date("2026-11-15T06:00:00");
+var START_DATE = new Date("2026-05-05");
+var TODAY = new Date();
+
+var PHASES = [
+  {name:"Base Building", weeks:"1-8", color:"pb1", emoji:"&#127793;", tip:"Focus on easy aerobic effort. You should be able to hold a conversation. Consistency beats intensity right now."},
+  {name:"Aerobic Development", weeks:"9-16", color:"pb2", emoji:"&#128170;", tip:"Start adding tempo runs. Your body is adapting — trust the process and log every session."},
+  {name:"Marathon Prep", weeks:"17-22", color:"pb3", emoji:"&#128293;", tip:"Peak training phase. Long runs over 30km build mental and physical toughness for race day."},
+  {name:"Taper", weeks:"23-26", color:"pb4", emoji:"&#128034;", tip:"Reduce volume but keep intensity. Trust your training. Rest is part of the plan."},
+  {name:"Race Week", weeks:"27-28", color:"pb5", emoji:"&#127942;", tip:"Stay calm. Light shakeout runs only. Hydrate, sleep, and trust your 26 weeks of preparation."}
+];
+
+var PLAN = [
+  {w:1,  d:"May 5-11",   p:0, tue:"Walk/Run 20min", thu:"Walk/Run 20min", sat:"Walk/Run 25min", total:7,  tip:"Start with 1 min running, 2 min walking. Repeat 6-7 times. No ego, just movement. Showing up is the win."},
+  {w:2,  d:"May 12-18",  p:0, tue:"Walk/Run 25min", thu:"Walk/Run 25min", sat:"Walk/Run 30min", total:9,  tip:"Increase to 2 min running, 2 min walking. Your lungs adapt faster than your legs. Be patient."},
+  {w:3,  d:"May 19-25",  p:0, tue:"Walk/Run 30min", thu:"Walk/Run 30min", sat:"Walk/Run 35min", total:11, tip:"Try 3 min running, 1 min walking. You are teaching your body a new skill. It takes time."},
+  {w:4,  d:"May 26-Jun 1",p:0,tue:"Easy walk 20min",thu:"Walk/Run 25min", sat:"Walk/Run 30min", total:8,  tip:"Recovery week. Go easy. Your body is adapting. Rest is training too."},
+  {w:5,  d:"Jun 2-8",    p:0, tue:"Easy Run 3km",   thu:"Easy Run 3km",   sat:"Easy Run 5km",   total:11, tip:"First continuous runs. Slow is fine. If you cannot speak in full sentences, slow down more."},
+  {w:6,  d:"Jun 9-15",   p:0, tue:"Easy Run 4km",   thu:"Easy Run 4km",   sat:"Easy Run 6km",   total:14, tip:"You are running now. Real running. That is huge. Keep the effort easy and conversational."},
+  {w:7,  d:"Jun 16-22",  p:0, tue:"Easy Run 5km",   thu:"Easy Run 5km",   sat:"Long Run 8km",   total:18, tip:"First proper long run. Go 90 seconds per km slower than you think. Hydrate before you go."},
+  {w:8,  d:"Jun 23-29",  p:0, tue:"Easy Run 4km",   thu:"Easy Run 4km",   sat:"Easy Run 6km",   total:14, tip:"Recovery week after first long run. Notice how 5km feels easier than week 1. That is fitness."},
+  {w:9,  d:"Jun 30-Jul 6",p:1,tue:"Easy Run 5km",   thu:"Easy Run 5km",   sat:"Long Run 10km",  total:20, tip:"First 10km long run! A huge milestone. Fuel with a banana before and water every 2km."},
+  {w:10, d:"Jul 7-13",   p:1, tue:"Easy Run 6km",   thu:"Easy Run 6km",   sat:"Long Run 12km",  total:24, tip:"Build confidence on the 12km. You have now run further than most people ever will."},
+  {w:11, d:"Jul 14-20",  p:1, tue:"Easy Run 6km",   thu:"Easy Run 6km",   sat:"Long Run 14km",  total:26, tip:"Your legs are getting strong. Start practising your race-day nutrition on long runs."},
+  {w:12, d:"Jul 21-27",  p:1, tue:"Easy Run 5km",   thu:"Easy Run 5km",   sat:"Easy Run 10km",  total:20, tip:"Cutback week. Your body needs this. Do not skip. Fitness is built during rest."},
+  {w:13, d:"Jul 28-Aug 3",p:1,tue:"Easy Run 7km",   thu:"Easy Run 7km",   sat:"Long Run 16km",  total:30, tip:"30km week. You are becoming a real runner. Eat well the night before your long run."},
+  {w:14, d:"Aug 4-10",   p:1, tue:"Easy Run 7km",   thu:"Tempo 7km",      sat:"Long Run 18km",  total:32, tip:"First tempo run: comfortably hard effort. 7 out of 10. Builds your marathon engine."},
+  {w:15, d:"Aug 11-17",  p:1, tue:"Easy Run 8km",   thu:"Tempo 8km",      sat:"Long Run 20km",  total:36, tip:"20km long run. You are halfway to race distance. Incredible progress from Week 1."},
+  {w:16, d:"Aug 18-24",  p:1, tue:"Easy Run 5km",   thu:"Easy Run 5km",   sat:"Easy Run 12km",  total:22, tip:"Recovery week. Legs need time to absorb 20km. Sleep in. Eat protein. Trust the plan."},
+  {w:17, d:"Aug 25-31",  p:2, tue:"Easy Run 8km",   thu:"Tempo 8km",      sat:"Long Run 22km",  total:38, tip:"Phase 3 begins. You have built a real aerobic base. Now we prepare you for race day."},
+  {w:18, d:"Sep 1-7",    p:2, tue:"Easy Run 8km",   thu:"Tempo 8km",      sat:"Long Run 24km",  total:40, tip:"24km long run. Practice your race-day routine: same shoes, same fuel, same time of day."},
+  {w:19, d:"Sep 8-14",   p:2, tue:"Easy Run 7km",   thu:"Easy Run 7km",   sat:"Long Run 20km",  total:34, tip:"Cutback week within peak phase. You may feel strong enough to push. Do not. Trust the plan."},
+  {w:20, d:"Sep 15-21",  p:2, tue:"Easy Run 10km",  thu:"Tempo 10km",     sat:"Long Run 28km",  total:48, tip:"28km. You are getting close to the full distance mentally. Break it into 7x4km chunks in your head."},
+  {w:21, d:"Sep 22-28",  p:2, tue:"Easy Run 10km",  thu:"Tempo 10km",     sat:"Long Run 30km",  total:50, tip:"30km peak long run. The furthest you will run before race day. You have done the hardest work."},
+  {w:22, d:"Sep 29-Oct 5",p:2,tue:"Easy Run 7km",   thu:"Easy Run 7km",   sat:"Easy Run 16km",  total:30, tip:"Post-peak recovery. Your fitness is locked in. The taper begins next week."},
+  {w:23, d:"Oct 6-12",   p:3, tue:"Easy Run 8km",   thu:"Tempo 8km",      sat:"Long Run 24km",  total:40, tip:"Taper Phase. Keep intensity but cut volume. You may feel sluggish or anxious. That is normal."},
+  {w:24, d:"Oct 13-19",  p:3, tue:"Easy Run 7km",   thu:"Tempo 7km",      sat:"Long Run 18km",  total:32, tip:"Taper madness is real. Legs may feel heavy. You are NOT losing fitness. You are storing energy."},
+  {w:25, d:"Oct 20-26",  p:3, tue:"Easy Run 5km",   thu:"Tempo 5km",      sat:"Long Run 12km",  total:22, tip:"You should start feeling light and springy. Race day is close. Lay out your gear this week."},
+  {w:26, d:"Oct 27-Nov 2",p:3,tue:"Easy Run 4km",   thu:"Easy Run 4km",   sat:"Easy Run 8km",   total:16, tip:"Final taper week. Short easy runs only. Carb load from Thursday. Hydrate all week."},
+  {w:27, d:"Nov 3-9",    p:4, tue:"Easy Run 4km",   thu:"Easy Run 3km",   sat:"Shakeout 2km",   total:9,  tip:"Race week. Pack your bag Tuesday. Rest your legs. Eat familiar food. Sleep 8 hours every night."},
+  {w:28, d:"Nov 10-15",  p:4, tue:"Shakeout 3km",   thu:"Easy 2km",       sat:"RACE 42.195km",  total:47.2, tip:"RACE DAY. Start 30 seconds per km SLOWER than you think. Walk through aid stations. Smile at km 32. You are ready."}
+];
+
+var TIPS = PLAN.map(function(p){return p.tip;});
+
+// ---- CURRENT WEEK CALCULATION ----
+function getCurrentWeek() {
+  var msPerWeek = 7*24*60*60*1000;
+  var diff = TODAY - START_DATE;
+  var w = Math.floor(diff / msPerWeek) + 1;
+  return Math.max(1, Math.min(28, w));
+}
+
+var currentWeek = getCurrentWeek();
+
+function getPhaseIndex(weekNum) {
+  if(weekNum <= 8) return 0;
+  if(weekNum <= 16) return 1;
+  if(weekNum <= 22) return 2;
+  if(weekNum <= 26) return 3;
+  return 4;
+}
+
+// ---- COUNTDOWN ----
+function updateCountdown() {
+  var now = new Date();
+  var diff = RACE_DATE - now;
+  if(diff < 0) {
+    document.getElementById("cdDays").textContent = "DONE";
+    return;
+  }
+  var d = Math.floor(diff/(1000*60*60*24));
+  var h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+  var m = Math.floor((diff%(1000*60*60))/(1000*60));
+  var s = Math.floor((diff%(1000*60))/1000);
+  document.getElementById("cdDays").textContent = d;
+  document.getElementById("cdHours").textContent = String(h).padStart(2,"0");
+  document.getElementById("cdMins").textContent = String(m).padStart(2,"0");
+  document.getElementById("cdSecs").textContent = String(s).padStart(2,"0");
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// ---- PROGRESS BAR ----
+var pct = Math.round(((currentWeek-1)/28)*100);
+document.getElementById("progFill").style.width = pct + "%";
+document.getElementById("progPct").textContent = pct + "%";
+document.getElementById("currentWeekNum").textContent = currentWeek;
+document.getElementById("weekBadge").textContent = currentWeek;
+document.getElementById("currentPhaseName").textContent = "Phase " + (getPhaseIndex(currentWeek)+1) + ": " + PHASES[getPhaseIndex(currentWeek)].name;
+
+// ---- PHASE CARDS ----
+(function buildPhaseCards() {
+  var c = document.getElementById("phaseCards");
+  var pi = getPhaseIndex(currentWeek);
+  PHASES.forEach(function(ph, i) {
+    var isActive = i === pi;
+    var isDone = (i < pi) || (currentWeek > 28 && i < 5);
+    var cls = "phase-card" + (isActive?" active-phase":"") + (isDone?" done-phase":"");
+    var youBadge = isActive ? "<div class='phase-you'>YOU ARE HERE</div>" : "";
+    c.innerHTML += "<div class='" + cls + "'>" +
+      "<div class='phase-num'>Phase " + (i+1) + "</div>" +
+      "<div style='font-size:1.4rem;margin-bottom:6px'>" + ph.emoji + "</div>" +
+      "<div class='phase-name'>" + ph.name + "</div>" +
+      "<div class='phase-weeks'>Weeks " + ph.weeks + "</div>" +
+      youBadge +
+      "</div>";
+  });
+})();
+
+// ---- SESSION CARDS ----
+(function buildSessionCards() {
+  var c = document.getElementById("sessionCards");
+  var wk = PLAN[currentWeek-1];
+  var sessions = [
+    {day:"Tuesday", type:wk.tue, key:"tue"},
+    {day:"Thursday", type:wk.thu, key:"thu"},
+    {day:"Saturday", type:wk.sat, key:"sat"}
+  ];
+  var storageKey = "marathon_sess_w" + currentWeek;
+  var done = JSON.parse(localStorage.getItem(storageKey)||"{}");
+  sessions.forEach(function(s) {
+    var isDone = done[s.key];
+    var dist = s.type.match(/\d+(\.\d+)?/);
+    var distStr = dist ? dist[0] + " km" : "";
+    var typeLabel = s.type.replace(/\d+(\.\d+)?\s*km/i,"").trim();
+    c.innerHTML += "<div class='session-card" + (isDone?" done":"") + "' id='sess-" + s.key + "'>" +
+      "<div class='sess-day'>" + s.day + "</div>" +
+      "<div class='sess-type'>" + typeLabel + "</div>" +
+      "<div class='sess-dist'>" + distStr + "</div>" +
+      "<div class='sess-desc'>" + getSessionDesc(s.type) + "</div>" +
+      "<label class='sess-check" + (isDone?" checked":"") + "' id='lbl-" + s.key + "'>" +
+      "<input type='checkbox' " + (isDone?"checked":"") + " data-key='" + s.key + "' onchange='markDone(this.dataset.key,this.checked)'>" +
+      (isDone ? "&#10003; Completed!" : "Mark as done") +
+      "</label></div>";
+  });
+})();
+
+function getSessionDesc(type) {
+  var t = type.toLowerCase();
+  if(t.indexOf("walk/run")>=0) return "Walk/Run intervals. Start with 1-2 min running, 2 min walking. Repeat. No pressure. Just move.";
+  if(t.indexOf("easy walk")>=0) return "Recovery walk. 20 minutes easy. No running needed. Just stay active.";
+  if(t.indexOf("easy")>=0) return "Comfortable conversational pace. If you cannot speak in full sentences, slow down. Zone 2 aerobic effort.";
+  if(t.indexOf("tempo")>=0) return "Comfortably hard effort. 7 out of 10 intensity. You can speak but not hold a full conversation.";
+  if(t.indexOf("long")>=0) return "Your most important run of the week. Go 90 sec/km slower than comfortable. Fuel every 45 minutes.";
+  if(t.indexOf("shakeout")>=0) return "Very easy and short. Just loosen the legs. Do not tire yourself before race day.";
+  if(t.indexOf("race")>=0) return "RACE DAY! Start slow. Trust 27 weeks of work. Smile at every km marker.";
+  return "Complete at your own comfortable pace. Listen to your body.";
+}
+
+function markDone(key, checked) {
+  var storageKey = "marathon_sess_w" + currentWeek;
+  var done = JSON.parse(localStorage.getItem(storageKey)||"{}");
+  done[key] = checked;
+  localStorage.setItem(storageKey, JSON.stringify(done));
+  var card = document.getElementById("sess-" + key);
+  var lbl = document.getElementById("lbl-" + key);
+  if(checked) {
+    card.classList.add("done");
+    lbl.classList.add("checked");
+    lbl.innerHTML = "<input type='checkbox' data-key='" + key + "' checked onchange='markDone(this.dataset.key,this.checked)'>&#10003; Completed!";
+  } else {
+    card.classList.remove("done");
+    lbl.classList.remove("checked");
+    lbl.innerHTML = "<input type='checkbox' data-key='" + key + "' onchange='markDone(this.dataset.key,this.checked)'>Mark as done";
+  }
+}
+
+// ---- WEEKLY TIP ----
+document.getElementById("weeklyTip").textContent = TIPS[currentWeek-1] || "Keep going. Every run counts.";
+
+// ---- MILEAGE CHART ----
+(function buildChart() {
+  var labels = PLAN.map(function(p){return "W"+p.w;});
+  var targets = PLAN.map(function(p){return p.total;});
+  var runs = JSON.parse(localStorage.getItem("marathon_runs")||"[]");
+  var actualByWeek = new Array(28).fill(null);
+  runs.forEach(function(r) {
+    var d = new Date(r.date);
+    var diff = d - START_DATE;
+    var wk = Math.floor(diff/(7*24*60*60*1000));
+    if(wk >= 0 && wk < 28) {
+      actualByWeek[wk] = (actualByWeek[wk]||0) + parseFloat(r.dist||0);
+    }
+  });
+  var ctx = document.getElementById("mileageChart").getContext("2d");
+  new Chart(ctx, {
+    type:"line",
+    data:{
+      labels:labels,
+      datasets:[
+        {label:"Target (km)",data:targets,borderColor:"#00d4aa33",backgroundColor:"transparent",borderWidth:1.5,pointRadius:0,borderDash:[4,4]},
+        {label:"Actual (km)",data:actualByWeek,borderColor:"#00d4aa",backgroundColor:"#00d4aa15",borderWidth:2,pointRadius:3,pointBackgroundColor:"#00d4aa",fill:true,tension:.3}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{labels:{color:"#666",font:{size:11}}},tooltip:{callbacks:{title:function(i){return "Week "+i[0].dataIndex+1;}}}},
+      scales:{
+        x:{grid:{color:"#1a1a1a"},ticks:{color:"#555",font:{size:10},maxTicksLimit:14}},
+        y:{grid:{color:"#1a1a1a"},ticks:{color:"#555",font:{size:10}},title:{display:true,text:"km",color:"#555",font:{size:10}}}
+      }
+    }
+  });
+})();
+
+// ---- RUN LOG ----
+(function initRunLog() {
+  var d = document.getElementById("runDate");
+  d.value = TODAY.toISOString().split("T")[0];
+  renderRunTable();
+})();
+
+function logRun() {
+  var date = document.getElementById("runDate").value;
+  var dist = parseFloat(document.getElementById("runDist").value);
+  var dur = parseInt(document.getElementById("runDuration").value);
+  var type = document.getElementById("runType").value;
+  var notes = document.getElementById("runNotes").value;
+  if(!date||!dist||dist<=0) { showMsg("Please enter date and distance","#ef4444"); return; }
+  var runs = JSON.parse(localStorage.getItem("marathon_runs")||"[]");
+  runs.unshift({id:Date.now(),date,dist,dur:dur||0,type,notes});
+  localStorage.setItem("marathon_runs",JSON.stringify(runs));
+  document.getElementById("runDist").value="";
+  document.getElementById("runDuration").value="";
+  document.getElementById("runNotes").value="";
+  showMsg("Run logged! Keep it up &#127939;","#00d4aa");
+  renderRunTable();
+}
+
+function showMsg(msg, color) {
+  var el = document.getElementById("logMsg");
+  el.innerHTML = msg;
+  el.style.color = color;
+  setTimeout(function(){el.innerHTML="";},3000);
+}
+
+function deleteRun(id) {
+  var runs = JSON.parse(localStorage.getItem("marathon_runs")||"[]");
+  runs = runs.filter(function(r){return r.id !== id;});
+  localStorage.setItem("marathon_runs",JSON.stringify(runs));
+  renderRunTable();
+}
+
+function renderRunTable() {
+  var runs = JSON.parse(localStorage.getItem("marathon_runs")||"[]");
+  var tbody = document.getElementById("runTableBody");
+  var totalKm = runs.reduce(function(a,r){return a+parseFloat(r.dist||0);},0);
+  document.getElementById("totalKm").textContent = "Total: " + totalKm.toFixed(1) + " km";
+  if(!runs.length) {
+    tbody.innerHTML = "<tr><td colspan='7' class='no-runs'>No runs logged yet. Add your first run above!</td></tr>";
+    return;
+  }
+  tbody.innerHTML = runs.map(function(r) {
+    var pace = r.dur && r.dist ? (r.dur/r.dist).toFixed(1)+" min/km" : "-";
+    var notes = r.notes ? r.notes.substring(0,40)+(r.notes.length>40?"...":"") : "-";
+    return "<tr><td>"+r.date+"</td><td style='color:#00d4aa'>"+r.dist+" km</td><td>"+(r.dur?r.dur+" min":"-")+"</td><td>"+pace+"</td><td>"+r.type+"</td><td style='color:#666'>"+notes+"</td><td><button class='btn btn-red' onclick='deleteRun("+r.id+")'>&#10005;</button></td></tr>";
+  }).join("");
+}
+
+// ---- FULL PLAN TABLE ----
+(function buildPlan() {
+  var tabsEl = document.getElementById("phaseTabs");
+  var bodyEl = document.getElementById("planBody");
+  var phaseNames = ["Base Building","Aerobic Development","Marathon Prep","Taper","Race Week"];
+  var currentFilter = -1;
+
+  function renderTable(filter) {
+    var rows = filter === -1 ? PLAN : PLAN.filter(function(p){return p.p === filter;});
+    var pColors = ["pb1","pb2","pb3","pb4","pb5"];
+    bodyEl.innerHTML = rows.map(function(row) {
+      var isCurrent = row.w === currentWeek;
+      return "<tr class='" + (isCurrent?"current-week":"") + "'>" +
+        "<td class='wk-num'>" + row.w + (isCurrent?" &#8592;":"") + "</td>" +
+        "<td style='color:#666;font-size:.75rem'>" + row.d + "</td>" +
+        "<td><span class='phase-badge " + pColors[row.p] + "'>" + phaseNames[row.p] + "</span></td>" +
+        "<td><span class='sess-pill'>" + row.tue + "</span></td>" +
+        "<td><span class='sess-pill'>" + row.thu + "</span></td>" +
+        "<td><span class='sess-pill'>" + row.sat + "</span></td>" +
+        "<td style='color:#00d4aa;font-weight:600'>" + row.total + " km</td></tr>";
+    }).join("");
+  }
+
+  tabsEl.innerHTML = "<button class='phase-tab active' data-f='-1' onclick='filterPlan(-1,this)'>All Weeks</button>" +
+    phaseNames.map(function(n,i){return "<button class='phase-tab' data-f='"+i+"' onclick='filterPlan("+i+",this)'>"+n+"</button>";}).join("");
+
+  renderTable(-1);
+
+  window.filterPlan = function(f, btn) {
+    document.querySelectorAll(".phase-tab").forEach(function(b){b.classList.remove("active");});
+    btn.classList.add("active");
+    renderTable(f);
+  };
+})();
+
+// ---- NAV TOGGLE ----
+function toggleNav() {
+  document.getElementById("mobileNav").classList.toggle("open");
+}
+</script>
+
+<!-- 11PM NIGHT BRIEF BANNER -->
+<div class="night-brief" id="nightBrief">
+  <div class="nb-header">
+    <span style="font-size:1.3rem">&#127939;</span>
+    <div><div class="nb-title">11PM Brief</div><div class="nb-sub">Tomorrow&rsquo;s run, DSMND.H</div></div>
+    <button class="nb-close" onclick="document.getElementById('nightBrief').classList.remove('show')">&#10005;</button>
+  </div>
+  <div id="nbContent"></div>
+  <div style="margin-top:12px;padding:8px 10px;background:#052e1c40;border-radius:6px;font-size:.76rem;color:#00d4aa">
+    &#128164; Sleep well. Runs are won the night before.
+  </div>
+</div>
+
+</body>
+</html>
